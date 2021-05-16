@@ -26,7 +26,7 @@ public class MyHttpClient {
 
     public void main() {
         try {
-            String url = "https://www.baidu.com";
+            String url = "https://http://localhost:8801";
             String text =  getAsString(url);
             System.out.println("url: " + url + " ; response: \n" + text);
         }catch (IOException ex){

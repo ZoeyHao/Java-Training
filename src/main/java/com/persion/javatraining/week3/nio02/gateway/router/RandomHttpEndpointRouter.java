@@ -1,4 +1,4 @@
-package com.persion.javatraining.week3.nio02.src.main.java.io.github.kimmking.gateway.router;
+package com.persion.javatraining.week3.nio02.gateway.router;
 
 import java.util.List;
 import java.util.Random;

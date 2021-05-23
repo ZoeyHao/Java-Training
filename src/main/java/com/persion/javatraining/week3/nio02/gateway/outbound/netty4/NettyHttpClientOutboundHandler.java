@@ -1,4 +1,4 @@
-package com.persion.javatraining.week3.nio02.src.main.java.io.github.kimmking.gateway.outbound.netty4;
+package com.persion.javatraining.week3.nio02.gateway.outbound.netty4;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

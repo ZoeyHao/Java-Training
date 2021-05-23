@@ -1,4 +1,4 @@
-package com.persion.javatraining.week3.nio02.src.main.java.io.github.kimmking.gateway.outbound.httpclient4;
+package com.persion.javatraining.week3.nio02.gateway.outbound.httpclient4;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;

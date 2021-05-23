@@ -1,4 +1,4 @@
-package com.persion.javatraining.week3.nio02.src.main.java.io.github.kimmking.gateway.filter;
+package com.persion.javatraining.week3.nio02.gateway.filter;
 
 import io.netty.handler.codec.http.FullHttpResponse;
 

@@ -1,11 +1,11 @@
-package com.persion.javatraining.week3.nio02.src.main.java.io.github.kimmking.gateway.outbound.httpclient4;
+package com.persion.javatraining.week3.nio02.gateway.outbound.httpclient4;
 
 
-import io.github.kimmking.gateway.filter.HeaderHttpResponseFilter;
-import io.github.kimmking.gateway.filter.HttpRequestFilter;
-import io.github.kimmking.gateway.filter.HttpResponseFilter;
-import io.github.kimmking.gateway.router.HttpEndpointRouter;
-import io.github.kimmking.gateway.router.RandomHttpEndpointRouter;
+import com.persion.javatraining.week3.nio02.gateway.filter.HeaderHttpResponseFilter;
+import com.persion.javatraining.week3.nio02.gateway.filter.HttpRequestFilter;
+import com.persion.javatraining.week3.nio02.gateway.filter.HttpResponseFilter;
+import com.persion.javatraining.week3.nio02.gateway.router.HttpEndpointRouter;
+import com.persion.javatraining.week3.nio02.gateway.router.RandomHttpEndpointRouter;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,19 +13,12 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.impl.nio.reactor.IOReactorConfig;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
+import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.*;
-import java.util.logging.Filter;
 import java.util.stream.Collectors;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -34,7 +27,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class HttpOutboundHandler {
     
-    private CloseableHttpAsyncClient httpclient;
+    private OkHttpClient httpclient;
     private ExecutorService proxyService;
     private List<String> backendUrls;
 
@@ -52,20 +45,21 @@ public class HttpOutboundHandler {
         proxyService = new ThreadPoolExecutor(cores, cores,
                 keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
                 new NamedThreadFactory("proxyService"), handler);
-        
-        IOReactorConfig ioConfig = IOReactorConfig.custom()
+
+        /*IOReactorConfig ioConfig = IOReactorConfig.custom()
                 .setConnectTimeout(1000)
                 .setSoTimeout(1000)
                 .setIoThreadCount(cores)
                 .setRcvBufSize(32 * 1024)
                 .build();
-        
+
         httpclient = HttpAsyncClients.custom().setMaxConnTotal(40)
                 .setMaxConnPerRoute(8)
                 .setDefaultIOReactorConfig(ioConfig)
                 .setKeepAliveStrategy((response,context) -> 6000)
                 .build();
         httpclient.start();
+         */
     }
 
     private String formatUrl(String backend) {
@@ -80,37 +74,32 @@ public class HttpOutboundHandler {
     }
     
     private void fetchGet(final FullHttpRequest inbound, final ChannelHandlerContext ctx, final String url) {
-        final HttpGet httpGet = new HttpGet(url);
-        //httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);
-        httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_KEEP_ALIVE);
-        httpGet.setHeader("mao", inbound.headers().get("mao"));
+        Request request = new Request.Builder()
+                .addHeader("mao", inbound.headers().get("mao"))
+                .url(url)
+                .build();
 
-        httpclient.execute(httpGet, new FutureCallback<HttpResponse>() {
-            @Override
-            public void completed(final HttpResponse endpointResponse) {
-                try {
-                    handleResponse(inbound, ctx, endpointResponse);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    
+            httpclient.newCall(request).enqueue(new Callback() {
+
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    try {
+                        handleResponse(inbound, ctx, response);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+
+                    }
                 }
-            }
-            
-            @Override
-            public void failed(final Exception ex) {
-                httpGet.abort();
-                ex.printStackTrace();
-            }
-            
-            @Override
-            public void cancelled() {
-                httpGet.abort();
-            }
-        });
+
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    e.printStackTrace();
+                }
+            });
     }
     
-    private void handleResponse(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx, final HttpResponse endpointResponse) throws Exception {
+    private void handleResponse(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx, final Response endpointResponse) throws Exception {
         FullHttpResponse response = null;
         try {
 //            String value = "hello,kimmking";
@@ -119,14 +108,14 @@ public class HttpOutboundHandler {
 //            response.headers().setInt("Content-Length", response.content().readableBytes());
     
     
-            byte[] body = EntityUtils.toByteArray(endpointResponse.getEntity());
+            byte[] body = endpointResponse.body().bytes();
 //            System.out.println(new String(body));
 //            System.out.println(body.length);
     
             response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(body));
 
             response.headers().set("Content-Type", "application/json");
-            response.headers().setInt("Content-Length", Integer.parseInt(endpointResponse.getFirstHeader("Content-Length").getValue()));
+            response.headers().setInt("Content-Length", Integer.parseInt(endpointResponse.header("Content-Length")));
 
             filter.filter(response);
 

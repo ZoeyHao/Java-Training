@@ -1,7 +1,7 @@
-package com.persion.javatraining.week3.nio02.src.main.java.io.github.kimmking.gateway;
+package com.persion.javatraining.week3.nio02.gateway;
 
 
-import io.github.kimmking.gateway.inbound.HttpInboundServer;
+import com.persion.javatraining.week3.nio02.gateway.inbound.HttpInboundServer;
 
 import java.util.Arrays;
 

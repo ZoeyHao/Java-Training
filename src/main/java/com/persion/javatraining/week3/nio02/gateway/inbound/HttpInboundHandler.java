@@ -1,8 +1,8 @@
-package com.persion.javatraining.week3.nio02.src.main.java.io.github.kimmking.gateway.inbound;
+package com.persion.javatraining.week3.nio02.gateway.inbound;
 
-import io.github.kimmking.gateway.filter.HeaderHttpRequestFilter;
-import io.github.kimmking.gateway.filter.HttpRequestFilter;
-import io.github.kimmking.gateway.outbound.httpclient4.HttpOutboundHandler;
+import com.persion.javatraining.week3.nio02.gateway.filter.HeaderHttpRequestFilter;
+import com.persion.javatraining.week3.nio02.gateway.filter.HttpRequestFilter;
+import com.persion.javatraining.week3.nio02.gateway.outbound.httpclient4.HttpOutboundHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;

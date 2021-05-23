@@ -1,5 +1,6 @@
 package com.persion.javatraining.week3.nio02.gateway.inbound;
 
+import com.persion.javatraining.week3.MyFilter;
 import com.persion.javatraining.week3.nio02.gateway.filter.HeaderHttpRequestFilter;
 import com.persion.javatraining.week3.nio02.gateway.filter.HttpRequestFilter;
 import com.persion.javatraining.week3.nio02.gateway.outbound.httpclient4.HttpOutboundHandler;
@@ -17,11 +18,12 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
     private static Logger logger = LoggerFactory.getLogger(HttpInboundHandler.class);
     private final List<String> proxyServer;
     private HttpOutboundHandler handler;
-    private HttpRequestFilter filter = new HeaderHttpRequestFilter();
+    private MyFilter filter;
     
-    public HttpInboundHandler(List<String> proxyServer) {
+    public HttpInboundHandler(List<String> proxyServer, MyFilter fiter) {
         this.proxyServer = proxyServer;
         this.handler = new HttpOutboundHandler(this.proxyServer);
+        this.filter=fiter;
     }
     
     @Override
@@ -40,7 +42,7 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
 //                handlerTest(fullRequest, ctx);
 //            }
     
-            handler.handle(fullRequest, ctx, filter);
+            handler.handle(fullRequest, ctx, this.filter);
     
         } catch(Exception e) {
             e.printStackTrace();

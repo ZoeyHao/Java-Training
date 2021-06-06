@@ -7,6 +7,13 @@ import java.sql.*;
 import java.util.List;
 
 public class mysqlHelper implements IsqlHelper{
+    private static IsqlHelper insatance = new mysqlHelper();
+
+    public IsqlHelper getInstance(){
+        return insatance;
+    }
+
+    private mysqlHelper() {};
 
     // 数据库连接地址
     private static String URL = "jdbc:mysql://localhost:3306/myschool?characterEncoding=utf8&useSSL=true";

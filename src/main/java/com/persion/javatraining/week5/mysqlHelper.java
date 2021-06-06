@@ -1,5 +1,8 @@
 package com.persion.javatraining.week5;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.*;
 import java.util.List;
 
@@ -15,23 +18,27 @@ public class mysqlHelper implements IsqlHelper{
 
     private Connection connect() {
         try {
-
             Class.forName("com.mysql.jdbc.Driver"); // 加载驱动
-
-            System.out.println("加载驱动成功!!!");
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             // TODO: handle exception
             e.printStackTrace();
         }
 
         try {
 
-            //通过DriverManager类的getConenction方法指定三个参数,连接数据库
-            Connection conn = DriverManager.getConnection(URL, UserName, Password);
-            System.out.println("连接数据库成功!!!");
+            HikariConfig hikariConfig = new HikariConfig();
+            //设置url
+            hikariConfig.setJdbcUrl(URL);
+            //数据库帐号
+            hikariConfig.setUsername(UserName);
+            //数据库密码
+            hikariConfig.setPassword(Password);
 
-            //返回连接对象
-            return conn;
+            hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
+            hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
+            hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            HikariDataSource ds = new HikariDataSource(hikariConfig);
+            return ds.getConnection();
 
         } catch (SQLException e) {
             // TODO: handle exception
